@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
+<title>ノベラムアラグナ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+/* 1画面に収まるアプリ。プレイ画面はカードとマスの大きさを画面の広さから計算する */
+:root{
+  --bg:#f3f5f9;--ink:#1c2230;--sub:#596276;--line:#c3c9d6;--paper:#fff;
+  --red:#d5372e;--blue:#2c58d6;--green:#3f8f6a;--mint:#e2f2e9;--hatch:#eceff4;
+  --display:'Dela Gothic One','Hiragino Kaku Gothic StdN','Yu Gothic',sans-serif;
+  --body:'Zen Kaku Gothic New','Hiragino Sans','Yu Gothic',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+#app{height:100%;max-width:1280px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column}
+.narrow{flex:1;min-height:0;width:100%;max-width:440px;margin:0 auto;display:flex;flex-direction:column;position:relative}
+.hd{flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:700;font-size:14px}
+.hd b{flex:1;text-align:center;white-space:nowrap}
+.hr{display:flex;align-items:center;gap:8px}
+.back{height:36px;padding-right:8px;color:var(--sub);font-weight:700;font-size:13px;white-space:nowrap}
+.sm{color:var(--sub);font-weight:500;font-size:12px;white-space:nowrap}
+.sbtn{position:relative;flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:14px;background:var(--paper)}
+.sbtn.off{color:var(--sub);border-color:var(--line)}
+.sbtn.off::after{content:"";position:absolute;width:22px;height:2px;background:var(--red);transform:rotate(-45deg)}
+.btn{flex:1;height:44px;border-radius:10px;border:1.5px solid var(--ink);display:grid;place-items:center;font-weight:700;background:var(--paper);font-size:13px}
+.btn.pri{background:var(--ink);color:var(--paper)}
+.btn.armed{background:var(--red);border-color:var(--red);color:var(--paper)}
+.btn:disabled{opacity:.35;cursor:default}
+.bar{flex:none;height:60px;display:flex;align-items:center;gap:8px}
+.pill{flex:none;height:24px;padding:0 10px;border-radius:999px;border:1.5px solid var(--ink);background:var(--paper);font-size:11px;font-weight:700;letter-spacing:0;white-space:nowrap}
+.pill.pri{background:var(--ink);color:var(--paper)}
+
+/* タイトル */
+.ttl-in{justify-content:center;gap:22px;padding-block:20px}
+.ttl-in > .sbtn{position:absolute;top:10px;right:0}
+.logo{display:grid;gap:10px;justify-items:center}
+.logo div{display:flex;gap:6px}
+.lc{width:56px;height:64px;display:grid;place-items:center;border:1.5px solid var(--ink);border-radius:7px;background:var(--paper);font-family:var(--display);font-size:32px;box-shadow:0 3px 0 var(--ink)}
+.lc:nth-child(odd){transform:rotate(-6deg) translateY(3px)}
+.lc:nth-child(even){transform:rotate(5deg) translateY(-3px)}
+.logo div + div .lc:nth-child(odd){transform:rotate(7deg) translateY(-2px)}
+.lc.r{background:var(--red);color:var(--paper)}
+.ttl-in p{margin:0;text-align:center;font-size:13px;color:var(--sub)}
+.ttl-in .btn{flex:none;height:54px;font-size:16px}
+.ttl-in ol{margin:0;padding:12px 14px 12px 32px;background:var(--paper);border:1.5px solid var(--line);border-radius:10px;font-size:12px;line-height:1.9}
+.reset{align-self:center;font-size:12px;color:var(--sub);text-decoration:underline;padding:4px 8px}
+.reset.armed{color:var(--red)}
+
+/* レベル選択 */
+.lv{display:grid;gap:10px;padding-top:4px}
+.lvr{border:1.5px solid var(--ink);border-radius:12px;padding:11px 14px;display:grid;grid-template-columns:44px 1fr auto;gap:2px 10px;align-items:center;box-shadow:0 3px 0 var(--ink);text-align:left;background:var(--paper)}
+.lvr:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.lvr b{grid-column:1;grid-row:1/3;font-family:var(--display);font-weight:400;font-size:28px;text-align:center}
+.lvr span{grid-column:2;grid-row:1;font-weight:700;font-size:14px}
+.lvr small{grid-column:2;grid-row:2;color:var(--sub);font-size:11px}
+.lvr i{grid-column:3;grid-row:1/3;font-style:normal;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;border:1.5px solid var(--ink)}
+.lvr.done i{background:var(--ink);color:var(--paper)}
+.lvr.oni{background:var(--ink);color:var(--paper);box-shadow:0 3px 0 var(--red)}
+.lvr.oni b{color:var(--red)}
+.lvr.oni small{color:#b9c0d0}
+.lvr.oni i{border-color:#b9c0d0;color:#b9c0d0}
+.lvr.oni.done i{background:var(--red);border-color:var(--red);color:var(--paper)}
+.lvr:disabled{cursor:default;transform:none}
+
+/* プレイ */
+.play{--lblH:28px}
+.play.wide{--lblH:32px}
+.play.wide .hd{height:56px;font-size:18px}
+.pl{flex:1;min-height:0;display:flex;flex-direction:column}
+.play.wide .pl{display:grid;grid-template-columns:1fr 1fr;column-gap:40px;padding-bottom:12px}
+.sg,.side{min-height:0;display:flex;flex-direction:column}
+.side{flex:1}
+.lbl{flex:none;height:var(--lblH);display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding-bottom:4px;font-size:11px;letter-spacing:.08em;color:var(--sub);white-space:nowrap}
+.lr{display:flex;align-items:center;gap:6px;min-width:0}
+.lr em{font-style:normal;letter-spacing:0;overflow:hidden;text-overflow:ellipsis}
+.play.wide .lbl{font-size:14px}
+.play.wide .pill{height:28px;font-size:13px;padding:0 14px}
+.gk{flex:none;align-self:center;display:grid;grid-template-columns:repeat(var(--cols),var(--sq));border-top:1.5px solid var(--green);border-left:1.5px solid var(--green);background:var(--paper)}
+.sq{width:var(--sq);height:var(--sq);display:grid;place-items:center;overflow:hidden;border-right:1px solid var(--green);border-bottom:1px solid var(--green);font-weight:700;font-size:var(--sf);line-height:1}
+.sq i{font-style:normal}
+.sq.off{background:repeating-linear-gradient(45deg,var(--hatch) 0 4px,var(--paper) 4px 8px)}
+.sq.w{background:var(--gt)}
+.sq.sel{background:var(--blue);color:var(--paper)}
+.sq.gap{background:var(--mint);box-shadow:inset 0 -3px 0 var(--red)}
+.sq.at{box-shadow:inset 3px 0 0 var(--red)}
+.sq.after{box-shadow:inset -3px 0 0 var(--red)}
+.mv i{display:inline-block;animation:mv .16s ease-out}
+@keyframes mv{from{transform:translateX(calc(var(--sq) * -1));opacity:.3}}
+.gk.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.bench{flex:none;height:var(--bh);display:flex;flex-wrap:wrap;gap:var(--bgap,14px) var(--bgx,8px);align-items:center;align-content:flex-start;padding:var(--bpt,11px) 7px 7px;border:1.5px dashed var(--line);border-radius:10px;overflow:hidden}
+.sq.fill{position:relative;overflow:visible}
+.sqb{position:absolute;inset:0;display:grid;place-items:center}
+.gx{top:-7px;right:-7px;width:16px;height:16px;font-size:11px;z-index:2}
+.sq.xl .gx{display:grid}
+@media (hover:hover){.sq.fill:hover .gx{display:grid}}
+.blk{flex:none;display:inline-flex;flex-wrap:wrap;max-width:100%;row-gap:3px;border-radius:7px}
+.blk > span,.wb{width:var(--btw);height:var(--bt);display:grid;place-items:center;font-size:var(--bf);font-weight:700;line-height:1;border:1.5px solid var(--ink);border-right-width:0;background:var(--tint)}
+.blk > span:first-child{border-radius:6px 0 0 6px}
+.blk > span:last-child{border-radius:0 6px 6px 0;border-right-width:1.5px}
+.blk > span:only-child{border-radius:6px}
+.blk.on{gap:4px;padding:3px;margin:-3px 0;max-width:calc(100% - 2px);border-radius:9px;box-shadow:0 0 0 2px var(--red)}
+.wch{position:relative;display:block}
+.wb{border-right-width:1.5px;border-radius:6px}
+.wch.f .wb{background:var(--paper)}
+.x{position:absolute;top:-10px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red);color:var(--paper);font-size:12px;font-weight:700;line-height:1;display:none;place-items:center;z-index:1}
+.wch.f .x,.wch:focus-within .x{display:grid}
+@media (hover:hover){.wch:hover .x{display:grid}}
+.plus{flex:none;width:var(--btw);height:var(--bt);display:grid;place-items:center;border:1.5px dashed var(--sub);border-radius:6px;color:var(--sub);font-size:var(--bf)}
+.plus.on{border:1.5px solid var(--red);color:var(--red);background:#fdeceb}
+.pool{flex:none;display:grid;grid-template-columns:repeat(auto-fill,var(--cw));gap:var(--g);justify-content:center}
+.c{width:var(--cw);height:var(--ch);display:grid;place-items:center;border:1.5px solid var(--ink);border-radius:6px;background:var(--paper);font-size:var(--cf);font-weight:700;line-height:1;box-shadow:0 2px 0 var(--ink)}
+.c:active{transform:translateY(2px);box-shadow:none}
+.c.h{border:1.5px dashed var(--line);box-shadow:none;background:transparent}
+.play.scroll .pool{flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;align-content:start;padding:2px 0 6px;border-bottom:1.5px dashed var(--line)}
+.side .bar{margin-top:auto}
+.play.wide .bar{height:72px}
+.play.wide .btn{height:52px;font-size:16px;border-radius:12px}
+
+/* 結果 */
+.cover{flex:1 1 auto;min-height:0;max-height:440px;border-radius:12px;background:linear-gradient(170deg,#28305a,#7b3f8f);color:var(--paper);position:relative;padding:20px 20px 0;display:flex;flex-direction:column;overflow:hidden}
+.cover > small{font-size:10px;letter-spacing:.25em;opacity:.8}
+.ct{font-family:var(--display);font-weight:400;line-height:1.45;margin:12px 0 0}
+.ct.l{font-size:34px}.ct.m{font-size:27px}.ct.s{font-size:22px}.ct.xs{font-size:18px}
+.share{flex:none;display:flex;justify-content:space-around;padding:10px 0 2px}
+.sh{display:grid;justify-items:center;gap:3px;font-size:10.5px;color:var(--sub);font-weight:700;text-decoration:none}
+.sh i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:12px;color:var(--paper);background:var(--ink)}
+.sh .sx{background:#000}.sh .sl{background:#06c755;font-size:10px}.sh .sd{background:#5865f2}.sh .si{background:var(--red)}
+.hide{flex:none;margin-top:8px;border:1.5px dashed var(--line);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--sub);background:var(--paper);text-align:left}
+.hide b{color:var(--ink)}
+.ov{position:fixed;inset:0;background:rgba(28,34,48,.6);display:grid;place-items:center;grid-template-columns:minmax(0,420px);justify-content:center;padding:16px;z-index:20}
+.ovin{min-width:0;background:var(--paper);border-radius:14px;padding:14px;display:grid;gap:10px;max-width:420px;width:100%;max-height:100%;overflow:auto}
+.ovin img{display:block;width:100%;max-height:70vh;object-fit:contain;border-radius:8px;-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
+.ovin p{margin:0;font-size:12px;color:var(--sub);text-align:center}
+.ovin .row{display:flex;gap:8px}
+a.btn{color:inherit;text-decoration:none}
+[hidden]{display:none!important}
+.dual{display:block;font-family:var(--body);font-size:11px;letter-spacing:.2em;opacity:.75;margin:8px 0}
+.au{margin-top:auto;font-size:12px;opacity:.85;padding:12px 0 62px}
+.belt{position:absolute;left:0;right:0;bottom:0;background:var(--red);padding:8px 18px;display:flex;align-items:baseline;gap:8px;font-weight:700}
+.belt big{font-family:var(--display);font-weight:400;font-size:30px}
+.orig{flex:none;padding:12px 2px 0;font-size:12px;line-height:1.7;color:var(--sub)}
+.unsee{float:right;font-size:11px;color:var(--sub);text-decoration:underline;letter-spacing:0;font-weight:500}
+.orig b{display:block;color:var(--ink);font-size:11px;letter-spacing:.1em}
+
+.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div id="toast" class="toast" role="status"></div>
+<div id="ov" class="ov" hidden></div>
+
+<script>
+const LEVELS=[
+  {id:'1',mark:'1',len:'約10字',note:'肩ならし。でも迷いやすい',titles:['彼女の姉は2周目の彼女']},
+  {id:'2',mark:'2',len:'約25字',note:'ひらがなの海',titles:['迷い猫に懐かれて、いつの間にか飼い主になっていた。']},
+  {id:'3',mark:'3',len:'約30字',note:'ここからが本番',titles:['無口な俺が深夜に通話しているのは、クラスで1番美人な優等生でした']},
+  {id:'4',mark:'4',len:'約40字',note:'主役を見失わないように',titles:['恋人にしようと生徒会長そっくりの女の子を錬成してみたら、オレが下僕になっていました']},
+  {id:'5',mark:'5',len:'約50字',note:'最長の45枚。根気の勝負',titles:['真の仲間じゃないと勇者のパーティーを追い出されたので、辺境でスローライフすることにしました']},
+  {id:'oni',mark:'鬼',len:'10字＋30字',note:'2冊ぶんのカードが混ざっている',titles:['死亡遊戯で飯を食う。','前世不死身の魔王にとって、デスゲームはぬるすぎる']},
+];
+const BASE=LEVELS.filter(l=>l.id!=='oni');
+const TINT=['#ffe9a6','#cfe3ff','#ffd5e2','#d3f1dc','#e6dcff'];
+const GT=['#fff3cc','#e2ecff','#ffe6ee','#e2f5e8','#efe9ff'];
+const KEY='ranobe-anagram-v1';
+let store={rec:{},drafts:{},mute:false};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.rec&&s.drafts)store=Object.assign(store,s)}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
+
+const S={screen:'title',lv:null,armed:null};
+let P=null,armT=0,toastT=0,animGap=null;
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const lvOf=id=>LEVELS.find(l=>l.id===id);
+const len=t=>[...t].length;
+const clean=t=>t.replace(/\s/g,'');
+const count=l=>l.titles.reduce((s,t)=>s+len(clean(t)),0);
+const doneN=()=>BASE.filter(l=>store.rec[l.id]).length;
+const unlocked=l=>l.id!=='oni'||doneN()===BASE.length;
+const nextLv=()=>LEVELS.find(l=>!store.rec[l.id]&&unlocked(l));
+const rank=v=>v>=100?'原作者':v>=90?'担当編集':v>=75?'書店員':v>=55?'読者':v>=35?'表紙買い':'別の作品';
+const pct=x=>Math.round(x*100);
+
+/* 音: 操作は紙と木、結果はポップ */
+let ac=null;
+function actx(){
+  if(!ac){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ac=new C()}
+  if(ac.state==='suspended')ac.resume();
+  return ac;
+}
+function tone(f,t0,d,o={}){
+  const a=actx();if(!a)return;
+  const t=a.currentTime+t0,os=a.createOscillator(),g=a.createGain();
+  os.type=o.type||'sine';os.frequency.setValueAtTime(f,t);if(o.f2)os.frequency.exponentialRampToValueAtTime(o.f2,t+d);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(o.g||.2,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  os.connect(g).connect(a.destination);os.start(t);os.stop(t+d+.05);
+}
+function noise(t0,d,o={}){
+  const a=actx();if(!a)return;
+  const n=Math.max(1,a.sampleRate*d|0),buf=a.createBuffer(1,n,a.sampleRate),x=buf.getChannelData(0);
+  for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(o.swell?Math.sin(Math.PI*i/n):(1-i/n)**2);
+  const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain(),t=a.currentTime+t0;
+  s.buffer=buf;f.type=o.type||'bandpass';f.frequency.setValueAtTime(o.freq||2000,t);if(o.f2)f.frequency.exponentialRampToValueAtTime(o.f2,t+d);
+  f.Q.value=o.q||1;g.gain.value=o.g||.3;
+  s.connect(f).connect(g).connect(a.destination);s.start(t);
+}
+const PENTA=[523,587,659,784,880,1047,1175,1319];
+const SFX={
+  nav:()=>{tone(520,0,.06,{g:.18});noise(0,.015,{freq:1800,q:4,g:.15})},
+  start:()=>{tone(620,0,.07,{g:.25});noise(0,.025,{freq:2400,q:5,g:.35});tone(930,.09,.12,{g:.2});noise(.09,.025,{freq:2800,q:5,g:.3})},
+  place:()=>{noise(0,.05,{freq:1800,q:2,g:.6});tone(170,0,.06,{type:'triangle',g:.12})},
+  word:()=>{noise(0,.04,{freq:1800,q:2,g:.5});noise(.07,.05,{freq:2200,q:2,g:.5});tone(784,.12,.18,{type:'triangle',g:.07})},
+  back:()=>noise(0,.14,{freq:3500,type:'highpass',g:.2}),
+  err:()=>{tone(130,0,.16,{type:'square',g:.05});tone(123,.18,.2,{type:'square',g:.05})},
+  ok:()=>{[0,.2].forEach(t=>{tone(950,t,.09,{g:.3});noise(t,.03,{freq:2600,q:6,g:.4})})},
+  hi:()=>{PENTA.forEach((f,i)=>tone(f,i*.06,.15,{g:.14}));tone(2093,.5,.4,{g:.1})},
+  lo:()=>{[392,370,349].forEach((f,i)=>tone(f,i*.24,.22,{type:'triangle',g:.15}));tone(330,.72,.7,{type:'triangle',g:.15,f2:300})},
+};
+function sfx(n){if(store.mute)return;try{SFX[n]()}catch(e){}}
+const sndBtn=()=>`<button class="sbtn${store.mute?' off':''}" data-a="mute" aria-label="音" aria-pressed="${!store.mute}">♪</button>`;
+
+function score(a,t){
+  a=[...a];t=[...t];const n=t.length;
+  const dp=Array.from({length:a.length+1},()=>Array(n+1).fill(0));
+  for(let i=1;i<=a.length;i++)for(let j=1;j<=n;j++)dp[i][j]=a[i-1]===t[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+  const bg={},cov=Array(a.length).fill(false);
+  for(let j=0;j<n-1;j++){const k=t[j]+t[j+1];bg[k]=(bg[k]||0)+1}
+  for(let i=0;i<a.length-1;i++){const k=a[i]+a[i+1];if(bg[k]){bg[k]--;cov[i]=cov[i+1]=true}}
+  return{chunk:cov.filter(Boolean).length/n,order:dp[a.length][n]/n};
+}
+/* かたまり（言葉の形が残っているか）と語順の相乗平均を、上の方だけ少し持ち上げる */
+const total=p=>Math.round(100*(1-Math.pow(1-Math.sqrt(p.chunk*p.order),1.3)));
+const SHARE_URL='https://bookworm1000-cyber.github.io/novelam-araguna/';
+const ART=!!window.claude||/claude/.test(location.hostname);
+const recUp=r=>r&&r.rows?{first:r,best:r,last:r,seen:true}:r;
+
+/* プレイの状態: 原稿用紙の各行は「かたまり」の並び。かたまりは1文字か、作業台で作った単語 */
+function newPlay(id){
+  const l=lvOf(id),cards=l.titles.flatMap(t=>[...clean(t)]),slot=cards.map((_,i)=>i);
+  for(let i=slot.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[slot[i],slot[j]]=[slot[j],slot[i]]}
+  return{id,cards,slot,caps:l.titles.map(t=>len(clean(t))),rows:l.titles.map(()=>[]),blocks:[],gc:{r:0,u:0},sel:null,fx:-1,nt:0};
+}
+function upgrade(p){
+  if(!p||!p.cur)return p;
+  p.rows=p.rows.map(r=>r.map(x=>typeof x==='number'?{ids:[x],t:-1}:x));
+  p.gc=p.cur.t==='g'?{r:p.cur.r,u:Math.min(p.cur.p,p.rows[p.cur.r].length)}:{r:0,u:p.rows[0].length};
+  delete p.cur;p.sel=null;p.fx=-1;return p;
+}
+const sig=l=>l.titles.map(clean).join('');
+function tidy(){
+  for(const k in store.drafts){const l=lvOf(k),d=upgrade(store.drafts[k]);if(!l||!d||!d.cards||d.cards.join('')!==sig(l))delete store.drafts[k]}
+  for(const k in store.rec){const l=lvOf(k),r=store.rec[k]=recUp(store.rec[k]);if(!l||!r||!r.first||r.first.rows.join('').length!==sig(l).length)delete store.rec[k]}
+}
+tidy();
+const rowLen=r=>P.rows[r].reduce((s,x)=>s+x.ids.length,0);
+
+function hd(backA,backLabel,center,right){
+  return `<header class="hd"><button class="back" data-a="${backA}">‹ ${backLabel}</button><b>${center}</b><span class="hr">${right}</span></header>`;
+}
+
+function titleHTML(){
+  const any=Object.keys(store.rec).length+Object.keys(store.drafts).length;
+  return `<div class="screen"><div class="narrow ttl-in">
+    ${sndBtn()}
+    <div class="logo" role="img" aria-label="ノベラムアラグナ">
+      <div><span class="lc r">ノ</span><span class="lc r">ベ</span><span class="lc">ラ</span><span class="lc">ム</span></div>
+      <div><span class="lc">ア</span><span class="lc r">ラ</span><span class="lc">グ</span><span class="lc">ナ</span></div>
+    </div>
+    <p>1文字ずつのカードを並べて、ラノベのタイトルを当てる</p>
+    <button class="btn pri" data-a="start">スタート</button>
+    <ol>
+      <li>カードを全部使ってタイトルを並べる</li>
+      <li>原題に近いほど点が高い。ぴったりでなくてよい</li>
+      <li>Lv.1〜5を遊ぶと鬼が開く。もう一度も遊べる</li>
+    </ol>
+    ${any?`<button class="reset${S.armed==='reset'?' armed':''}" data-a="reset">${S.armed==='reset'?'もう一度押すと記録を消します':'記録を消す'}</button>`:''}
+  </div></div>`;
+}
+
+function levelsHTML(){
+  const d=doneN();
+  const rows=LEVELS.map(l=>{
+    const r=store.rec[l.id],oni=l.id==='oni',locked=!unlocked(l);
+    const chip=r?(r.best.score>r.first.score?`${r.first.score}→${r.best.score}点`:`${r.first.score}点`):locked?`あと${BASE.length-d}つ`:store.drafts[l.id]?'途中':'未プレイ';
+    return `<button class="lvr${r?' done':''}${oni?' oni':''}" data-a="lv" data-id="${l.id}"${locked?' disabled':''}><b>${l.mark}</b><span>${l.len}・${count(l)}枚</span><i>${chip}</i><small>${locked?'Lv.1〜5を遊ぶと開く':l.note}</small></button>`;
+  }).join('');
+  return `<div class="screen"><div class="narrow">${hd('title','タイトル','レベルをえらぶ',`<span class="sm">${d} / ${BASE.length} クリア</span>`)}<div class="lv">${rows}</div></div></div>`;
+}
+
+function playHTML(){
+  const l=lvOf(P.id),sel=P.sel,L=calcLayout();
+  const gIds=P.rows.flat().flatMap(x=>x.ids),bIds=P.blocks.flatMap(b=>b.ids);
+  const used=new Set([...gIds,...bIds]),left=P.cards.length-used.size;
+  const gk=P.rows.map((row,r)=>{
+    const cap=P.caps[r],cols=L.cols[r],R=Math.ceil(cap/cols);
+    const cells=[];row.forEach((un,u)=>un.ids.forEach((id,j)=>cells.push({id,u,j,t:un.t})));
+    const n=cells.length,here=P.gc.r===r;
+    const at=here?row.slice(0,P.gc.u).reduce((s,x)=>s+x.ids.length,0):-1,gap=here&&n<cap,anim=animGap&&animGap.r===r;
+    let h='';
+    for(let d=0;d<R*cols;d++){
+      if(d>=cap){h+='<span class="sq off"></span>';continue}
+      if(gap&&d===at){h+='<button class="sq gap" data-a="gap" aria-label="次のカードが入るマス"></button>';continue}
+      const ci=gap&&d>at?d-1:d,c=cells[ci];
+      if(!c){h+=`<button class="sq" data-a="sqe" data-r="${r}" aria-label="空きマス"></button>`;continue}
+      let cls='sq',st='';
+      if(c.t>=0){cls+=' w';st=` style="--gt:${GT[c.t]}"`}
+      if(sel&&sel.t==='g'&&sel.r===r&&sel.u===c.u)cls+=' sel';
+      if(here&&!gap){if(ci===at)cls+=' at';else if(at===cap&&ci===cap-1)cls+=' after'}
+      if(anim&&gap&&d>at)cls+=' mv';
+      if(here&&c.u===P.gc.u-1&&c.j===row[c.u].ids.length-1)cls+=' xl';
+      const at3=`data-r="${r}" data-u="${c.u}" data-j="${c.j}"`;
+      h+=`<div class="${cls} fill"${st}><button class="sqb" data-a="sq" ${at3}><i>${esc(P.cards[c.id])}</i></button><button class="x gx" data-a="gx" ${at3} aria-label="${esc(P.cards[c.id])}を手札に戻す">×</button></div>`;
+    }
+    const name=P.caps.length>1?`${r+1}冊目`:'原稿用紙';
+    const right=sel&&sel.t==='g'&&sel.r===r
+      ?'<em>入れ替える相手をタップ</em><button class="pill" data-a="g2b">作業台へ戻す</button>'
+      :`<em>${n} / ${cap}字</em>`;
+    return `<div class="lbl"><span>${name}</span><span class="lr">${right}</span></div><div class="gk" style="--cols:${cols}">${h}</div>`;
+  }).join('');
+  animGap=null;
+  const sb=sel&&sel.t==='b'?sel.k:-1;
+  const bench=P.blocks.map((b,k)=>k===sb
+    ?`<span class="blk on" style="--tint:${TINT[b.t]}">${b.ids.map((id,j)=>`<span class="wch${P.fx===j?' f':''}"><button class="wb" data-a="wc" data-j="${j}">${esc(P.cards[id])}</button><button class="x" data-a="wx" data-j="${j}" aria-label="${esc(P.cards[id])}を手札に戻す">×</button></span>`).join('')}</span>`
+    :`<button class="blk" data-a="blk" data-k="${k}" style="--tint:${TINT[b.t]}">${b.ids.map(id=>`<span>${esc(P.cards[id])}</span>`).join('')}</button>`).join('')
+    +`<button class="plus${sel&&sel.t==='n'?' on':''}" data-a="new" aria-label="新しい単語を作る">＋</button>`;
+  const bRight=sb>=0?'<button class="pill pri" data-a="b2g">原稿用紙へ</button><button class="pill" data-a="split">ばらす</button>'
+    :`<em>${sel&&sel.t==='n'?'手札をタップで単語を作る':P.blocks.length?'単語をタップして選ぶ':'＋をタップして単語を作る'}</em>`;
+  const pool=P.slot.map(id=>used.has(id)?'<span class="c h"></span>':`<button class="c" data-a="pc" data-id="${id}">${esc(P.cards[id])}</button>`).join('');
+  const full=P.rows.every((_,i)=>rowLen(i)===P.caps[i]);
+  return `<div class="screen play${L.wide?' wide':''}${L.scroll?' scroll':''}" id="play" style="${L.style}">${hd('back','レベル',`Lv.${l.mark} ${l.len}`,`<span class="sm">残り${left}枚</span>${sndBtn()}`)}
+    <div class="pl">
+      <section class="sg">${gk}</section>
+      <section class="side">
+        <div class="lbl"><span>作業台</span><span class="lr">${bRight}</span></div>
+        <div class="bench">${bench}</div>
+        <div class="lbl"><span>手札</span>${L.scroll?'<span class="lr"><em>上下にスクロールできます</em></span>':''}</div>
+        <div class="pool">${pool}</div>
+        <div class="bar">
+          <button class="btn" data-a="bs">1枚戻す</button>
+          <button class="btn${S.armed==='clr'?' armed':''}" data-a="clr">${S.armed==='clr'?'本当に戻す？':'全部戻す'}</button>
+          <button class="btn pri${S.armed==='ok'?' armed':''}" data-a="ok"${full?'':' disabled'}>${S.armed==='ok'?'これで決定？':'決定'}</button>
+        </div>
+      </section>
+    </div></div>`;
+}
+
+const shareText=(l,r)=>`ノベラムアラグナ Lv.${l.mark}\n${r.rows.map(t=>`『${t}』`).join('\n')}\n一致度${r.score}点（${rank(r.score)}レベル）\n#ノベラムアラグナ`;
+function canFiles(){
+  if(ART||!navigator.canShare)return false;
+  try{return navigator.canShare({files:[new File([''],'a.png',{type:'image/png'})]})}catch(e){return false}
+}
+function resultHTML(){
+  const l=lvOf(S.lv),R=store.rec[S.lv],r=R.last;
+  const m=Math.max(...r.rows.map(len));
+  const fs=r.rows.length>1?'s':m>45?'xs':m>26?'s':m>12?'m':'l';
+  const nx=nextLv(),txt=shareText(l,r);
+  const xu=`https://x.com/intent/post?text=${encodeURIComponent(txt)}&url=${encodeURIComponent(SHARE_URL)}`;
+  const lu=`https://line.me/R/msg/text/?${encodeURIComponent(txt+'\n'+SHARE_URL)}`;
+  const parts=r.parts.chunk!=null?`かたまり ${pct(r.parts.chunk)}・語順 ${pct(r.parts.order)}`:`語順 ${pct(r.parts.order)}`;
+  const info=R.seen&&R.show!==false
+    ?`<div class="orig"><b>原題<button class="unsee" data-a="unsee">隠す ▲</button></b>${l.titles.map(esc).join('<br>')}<br>${parts}　初回 ${R.first.score}点・ベスト ${R.best.score}点${r.after?'（今回は答えを見た後）':''}</div>`
+    :`<button class="hide" data-a="see"><span><b>原題を見る</b>${R.seen?'':'　見ずにもう一度も選べます'}</span><span>▼</span></button>`;
+  return `<div class="screen"><div class="narrow">${hd('levels','レベル','あなたの新作',`<span class="sm">Lv.${l.mark}</span>${sndBtn()}`)}
+    <div class="cover"><small>NEW RELEASE</small><h2 class="ct ${fs}">${r.rows.map(esc).join('<span class="dual">2冊同時発売</span>')}</h2><div class="au">著　あなた</div>
+      <div class="belt">一致度<big>${r.score}</big>点<span>${rank(r.score)}レベル</span></div></div>
+    <div class="share">
+      <a class="sh" href="${xu}" target="_blank" rel="noopener"><i class="sx">X</i>X</a>
+      <a class="sh" href="${lu}" target="_blank" rel="noopener"><i class="sl">LINE</i>LINE</a>
+      <button class="sh" data-a="dc"><i class="sd">D</i>Discord</button>
+      <button class="sh" data-a="img"><i class="si">画像</i>画像</button>
+      ${canFiles()?'<button class="sh" data-a="sys"><i>共有</i>まとめて</button>':''}
+    </div>
+    ${info}
+    <div class="bar"><button class="btn" data-a="retry">もう一度</button><button class="btn pri" data-a="next">${nx?'次のレベルへ':'レベル選択へ'}</button></div>
+  </div></div>`;
+}
+
+function render(){
+  const pe=app.querySelector('.pool'),be=app.querySelector('.bench');
+  const keep=S.screen==='play'&&P&&pe?{id:P.id,ps:pe.scrollTop,bs:be?be.scrollTop:0}:null;
+  app.innerHTML=S.screen==='title'?titleHTML():S.screen==='levels'?levelsHTML():S.screen==='play'?playHTML():resultHTML();
+  if(S.screen==='result')makeImage().catch(()=>{});
+  if(S.screen!=='play'||!P)return;
+  const p2=app.querySelector('.pool'),b2=app.querySelector('.bench');
+  if(keep&&keep.id===P.id)p2.scrollTop=keep.ps;
+  fitBench(b2);
+}
+/* 作業台はスクロールさせず、はみ出すときは札を小さくして全部見せる */
+function fitBench(b){
+  const cs=getComputedStyle(b),bt=parseFloat(cs.getPropertyValue('--bt')),bw=parseFloat(cs.getPropertyValue('--btw'));
+  for(let s=1;s>=.2;s-=.05){
+    b.style.setProperty('--bgap',Math.max(3,Math.round(14*s))+'px');b.style.setProperty('--bgx',Math.max(3,Math.round(8*s))+'px');b.style.setProperty('--bpt',Math.max(4,Math.round(11*s))+'px');
+    b.style.setProperty('--bt',Math.round(bt*s)+'px');b.style.setProperty('--btw',Math.round(bw*s)+'px');b.style.setProperty('--bf',Math.round(bw*s*.6)+'px');
+    if(b.scrollHeight<=b.clientHeight+1&&b.scrollWidth<=b.clientWidth+1)break;
+  }
+}
+function go(screen,lv){S.screen=screen;if(lv!==undefined)S.lv=lv;S.armed=null;clearTimeout(armT);render()}
+
+/* 画面の広さから、原稿用紙の1行のマス数・マスの大きさ・カードの大きさを決める */
+function calcLayout(){
+  const W=app.clientWidth,H=app.clientHeight,wide=W>=760&&W/H>=1.15;
+  const n=P.cards.length,g=wide?6:4,head=wide?56:44,lb=wide?32:28,bar=wide?72:60;
+  const colW=wide?(W-40)/2:W;
+  let v=null,best=-1;
+  for(const c0 of wide?[10]:[10,11,12,13,14,15,16]){
+    const cols=P.caps.map(cap=>Math.ceil(cap/Math.ceil(cap/c0)));
+    const gRows=P.caps.reduce((s,cap,i)=>s+Math.ceil(cap/cols[i]),0),sqW=Math.min(...cols.map(c=>colW/c));
+    for(let cw=wide?64:56;cw>=22;cw--){
+      const ch=Math.round(cw*1.12),bt=Math.round(ch*.8),bh=bt*2+35;
+      const per=Math.max(1,Math.floor((colW+g)/(cw+g))),pr=Math.ceil(n/per);
+      const side=lb*2+bh+pr*ch+(pr-1)*g+bar;
+      let sq;
+      if(wide){if(head+side+12>H&&cw>22)continue;sq=Math.min(sqW,(H-head-12-lb*cols.length-4)/gRows,72)}
+      else sq=Math.min(sqW,(H-head-side-lb*cols.length-4)/gRows,56);
+      sq=Math.floor(sq);
+      const val=Math.min(cw,sq*1.25);
+      if(sq>=12&&val>best){best=val;v={cw,ch,bt,bh,sq,cols}}
+      if(wide)break;
+    }
+  }
+  if(!v)v={cw:22,ch:25,bt:20,bh:75,sq:12,cols:P.caps.map(c=>Math.min(c,16))};
+  let scroll=false;
+  if(!wide&&v.cw<32){
+    /* 収めるとカードが小さすぎるときは、カードを大きくして手札の中だけスクロールさせる */
+    scroll=true;let pick=null;
+    for(const c0 of [10,11,12,13,14,15,16]){
+      const cols=P.caps.map(cap=>Math.ceil(cap/Math.ceil(cap/c0)));
+      const gRows=P.caps.reduce((s,cap,i)=>s+Math.ceil(cap/cols[i]),0);
+      const sq=Math.floor(Math.min(...cols.map(c=>colW/c),34)),h=gRows*sq,ok=h<=H*.3;
+      if(!pick||(ok&&(!pick.ok||sq>pick.sq))||(!ok&&!pick.ok&&h<pick.h))pick={cols,sq,h,ok};
+    }
+    v={cw:36,ch:40,bt:32,bh:99,sq:pick.sq,cols:pick.cols};
+  }
+  const btw=Math.round(v.cw*.82);
+  const vars={'--g':g+'px','--cw':v.cw+'px','--ch':v.ch+'px','--cf':Math.round(v.cw*.55)+'px','--sq':v.sq+'px','--sf':Math.round(v.sq*.55)+'px',
+    '--bt':v.bt+'px','--btw':btw+'px','--bf':Math.round(btw*.6)+'px','--bh':v.bh+'px'};
+  return{wide,scroll,cols:v.cols,style:Object.entries(vars).map(([k,x])=>`${k}:${x}`).join(';')};
+}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800)}
+function bump(r){
+  toast('マスが足りません');sfx('err');
+  const g=app.querySelectorAll('.gk')[r];
+  if(g){g.classList.remove('shake');void g.offsetWidth;g.classList.add('shake')}
+}
+function armed(key){
+  clearTimeout(armT);
+  if(S.armed===key){S.armed=null;return true}
+  S.armed=key;armT=setTimeout(()=>{S.armed=null;render()},2500);return false;
+}
+
+function setCaret(r,u){
+  P.gc={r,u};
+  animGap=u<P.rows[r].length&&rowLen(r)<P.caps[r]?{r}:null;
+}
+function gInsert(un){
+  const{r,u}=P.gc;
+  if(rowLen(r)+un.ids.length>P.caps[r]){bump(r);return false}
+  P.rows[r].splice(u,0,un);P.gc.u++;
+  if(rowLen(r)===P.caps[r]){const nr=P.rows.findIndex((_,i)=>rowLen(i)<P.caps[i]);if(nr>=0&&nr!==r)P.gc={r:nr,u:P.rows[nr].length}}
+  return true;
+}
+function swapUnits(a,b){
+  const A=P.rows[a.r][a.u],B=P.rows[b.r][b.u];
+  if(a.r!==b.r){
+    const d=B.ids.length-A.ids.length;
+    if(rowLen(a.r)+d>P.caps[a.r]){bump(a.r);return false}
+    if(rowLen(b.r)-d>P.caps[b.r]){bump(b.r);return false}
+  }
+  P.rows[a.r][a.u]=B;P.rows[b.r][b.u]=A;sfx('word');return true;
+}
+
+function playAct(a,b,e){
+  const sel=P.sel,bsel=sel&&sel.t==='b';
+  switch(a){
+    case 'pc':{
+      const id=+b.dataset.id;
+      if(bsel){P.blocks[sel.k].ids.push(id);sfx('place');return true}
+      if(sel&&sel.t==='n'){P.blocks.push({ids:[id],t:P.nt++%TINT.length});P.sel={t:'b',k:P.blocks.length-1};P.fx=-1;sfx('place');return true}
+      P.sel=null;
+      if(gInsert({ids:[id],t:-1})){sfx('place');return true}
+      return false;
+    }
+    case 'sq':{
+      const r=+b.dataset.r,u=+b.dataset.u,j=+b.dataset.j,un=P.rows[r][u];
+      const rc=b.getBoundingClientRect(),right=e.clientX>=rc.left+rc.width/2;
+      if(sel&&sel.t==='g'){
+        if(sel.r===r&&sel.u===u){P.sel=null;setCaret(r,(j+(right?1:0))*2<=un.ids.length?u:u+1);return true}
+        if(!swapUnits(sel,{r,u}))return false;
+        P.sel=null;return true;
+      }
+      if(un.ids.length>1||un.t>=0){P.sel={t:'g',r,u};return true}
+      P.sel=null;setCaret(r,right?u+1:u);return true;
+    }
+    case 'sqe':{const r=+b.dataset.r;P.sel=null;setCaret(r,P.rows[r].length);return true}
+    case 'gx':{
+      const r=+b.dataset.r,u=+b.dataset.u,row=P.rows[r],un=row[u];
+      un.ids.splice(+b.dataset.j,1);
+      if(!un.ids.length){row.splice(u,1);if(P.gc.r===r&&P.gc.u>u)P.gc.u--}
+      P.sel=null;sfx('back');return true;
+    }
+    case 'del':{
+      P.sel=null;const{r,u}=P.gc,row=P.rows[r];if(u>=row.length)return true;
+      const un=row[u];un.ids.shift();if(!un.ids.length)row.splice(u,1);
+      sfx('back');return true;
+    }
+    case 'gap':P.sel=null;return true;
+    case 'g2b':{
+      if(!sel||sel.t!=='g')return false;
+      const un=P.rows[sel.r].splice(sel.u,1)[0];
+      if(P.gc.r===sel.r&&P.gc.u>sel.u)P.gc.u--;
+      P.blocks.push({ids:un.ids,t:un.t>=0?un.t:P.nt++%TINT.length});P.sel=null;sfx('word');return true;
+    }
+    case 'blk':P.sel={t:'b',k:+b.dataset.k};P.fx=-1;return true;
+    case 'new':P.sel=sel&&sel.t==='n'?null:{t:'n'};P.fx=-1;return true;
+    case 'wc':{const j=+b.dataset.j;P.fx=P.fx===j?-1:j;return true}
+    case 'wx':{
+      if(!bsel)return false;
+      const bl=P.blocks[sel.k];bl.ids.splice(+b.dataset.j,1);P.fx=-1;
+      if(!bl.ids.length){P.blocks.splice(sel.k,1);P.sel=null}
+      sfx('back');return true;
+    }
+    case 'b2g':{
+      if(!bsel)return false;
+      const bl=P.blocks[sel.k];
+      if(!gInsert({ids:bl.ids,t:bl.t}))return false;
+      P.blocks.splice(sel.k,1);P.sel=null;sfx('word');return true;
+    }
+    case 'split':if(!bsel)return false;P.blocks.splice(sel.k,1);P.sel=null;sfx('back');return true;
+    case 'bs':{
+      if(bsel){const bl=P.blocks[sel.k];bl.ids.pop();P.fx=-1;if(!bl.ids.length){P.blocks.splice(sel.k,1);P.sel=null}sfx('back');return true}
+      P.sel=null;const{r,u}=P.gc;if(u<1)return true;
+      const un=P.rows[r][u-1];un.ids.pop();if(!un.ids.length){P.rows[r].splice(u-1,1);P.gc.u--}
+      sfx('back');return true;
+    }
+    case 'clr':
+      if(armed('clr')){P.rows=P.rows.map(()=>[]);P.blocks=[];P.gc={r:0,u:0};P.sel=null;P.fx=-1;sfx('back')}
+      return true;
+    case 'ok':
+      if(armed('ok')){sfx('ok');submit();return false}
+      return true;
+  }
+  return false;
+}
+
+function submit(){
+  const l=lvOf(P.id),rows=P.rows.map(r=>r.flatMap(x=>x.ids).map(id=>P.cards[id]).join(''));
+  let c=0,o=0,N=0;
+  l.titles.map(clean).forEach((t,i)=>{const s=score(rows[i],t),n=len(t);c+=s.chunk*n;o+=s.order*n;N+=n});
+  const parts={chunk:c/N,order:o/N},sc=total(parts),prev=store.rec[P.id];
+  const res={rows,score:sc,parts,after:!!(prev&&prev.seen)};
+  if(!prev)store.rec[P.id]={first:res,best:res,last:res,seen:false};
+  else{prev.last=res;if(!res.after&&sc>prev.best.score)prev.best=res}
+  delete store.drafts[P.id];save();
+  const id=P.id;P=null;go('result',id);
+  setTimeout(()=>sfx(sc>=55?'hi':'lo'),420);
+}
+
+function startPlay(id){
+  P=upgrade(store.drafts[id])||newPlay(id);store.drafts[id]=P;save();go('play',id);
+}
+
+/* 結果の表紙を1枚の画像（1080×1350）にする */
+let imgCache={key:'',blob:null,url:''};
+const curKey=()=>{const r=store.rec[S.lv].last;return S.lv+'|'+r.rows.join('|')+'|'+r.score};
+function wrapText(x,t,w){
+  const out=[];let cur='';
+  for(const ch of t){
+    if(cur&&x.measureText(cur+ch).width>w){if('、。！？!?）」』～ー'.includes(ch)){cur+=ch;continue}out.push(cur);cur=ch}else cur+=ch;
+  }
+  if(cur)out.push(cur);return out;
+}
+async function makeImage(){
+  const key=curKey();if(imgCache.key===key&&imgCache.blob)return imgCache;
+  const l=lvOf(S.lv),r=store.rec[S.lv].last,all=r.rows.join('');
+  try{await Promise.all([document.fonts.load('60px "Dela Gothic One"',all+'0123456789'),document.fonts.load('700 30px "Zen Kaku Gothic New"','NEWRELASノベラムアラグナLv.著あなた一致度点レベル2冊同時発売'+rank(r.score))])}catch(e){}
+  const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,W*.35,H);g.addColorStop(0,'#28305a');g.addColorStop(1,'#7b3f8f');x.fillStyle=g;x.fillRect(0,0,W,H);
+  const body=(s,w=700)=>`${w} ${s}px "Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif`,disp=s=>`${s}px "Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif`;
+  x.fillStyle='rgba(255,255,255,.8)';x.font=body(30);x.fillText('NEW RELEASE',80,110);
+  x.textAlign='right';x.fillText(`ノベラムアラグナ  Lv.${l.mark}`,W-80,110);x.textAlign='left';
+  const m=Math.max(...r.rows.map(len)),fs=r.rows.length>1?60:m<=12?110:m<=26?88:m<=45?70:58;
+  let y=200+fs;
+  r.rows.forEach((t,i)=>{
+    if(i){x.font=body(30);x.fillStyle='rgba(255,255,255,.75)';x.fillText('2冊同時発売',80,y);y+=fs+20}
+    x.font=disp(fs);x.fillStyle='#fff';
+    for(const line of wrapText(x,t,W-160)){x.fillText(line,80,y);y+=fs*1.45}
+  });
+  x.font=body(34,500);x.fillStyle='rgba(255,255,255,.85)';x.fillText('著　あなた',80,H-240);
+  x.fillStyle='#d5372e';x.fillRect(0,H-180,W,180);
+  x.fillStyle='#fff';x.font=body(44);x.fillText('一致度',80,H-70);
+  let px=80+x.measureText('一致度').width+20;
+  x.font=disp(120);x.fillText(String(r.score),px,H-62);px+=x.measureText(String(r.score)).width+16;
+  x.font=body(44);x.fillText(`点　${rank(r.score)}レベル`,px,H-70);
+  const blob=await new Promise(res=>c.toBlob(res,'image/png'));
+  if(imgCache.url)URL.revokeObjectURL(imgCache.url);
+  imgCache={key,blob,url:URL.createObjectURL(blob)};return imgCache;
+}
+async function showImage(){
+  const ov=document.getElementById('ov');
+  ov.innerHTML='<div class="ovin"><p>画像を作っています</p></div>';ov.hidden=false;
+  try{
+    const im=await makeImage();
+    ov.innerHTML=`<div class="ovin"><img src="${im.url}" alt="結果の画像"><p>画像を長押し（PCは右クリック）で保存できます</p><div class="row">${ART?'':`<a class="btn" href="${im.url}" download="novelam-araguna.png">保存</a>`}<button class="btn pri" data-ov="close">閉じる</button></div></div>`;
+  }catch(e){ov.innerHTML='<div class="ovin"><p>画像を作れませんでした</p><button class="btn pri" data-ov="close">閉じる</button></div>'}
+}
+function shareDiscord(){
+  const l=lvOf(S.lv),r=store.rec[S.lv].last,text=shareText(l,r)+'\n'+SHARE_URL;
+  const ok=img=>toast(img?'画像と文をコピーしました。Discordに貼り付けてください':'文をコピーしました。Discordに貼り付けてください');
+  const textOnly=()=>{
+    try{navigator.clipboard.writeText(text).then(()=>ok(false),fallback)}catch(_){fallback()}
+  };
+  const fallback=()=>{
+    const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    let done=false;try{done=document.execCommand('copy')}catch(_){}
+    ta.remove();done?ok(false):toast('コピーできませんでした');
+  };
+  const img=imgCache.key===curKey()?imgCache.blob:null;
+  if(img&&window.ClipboardItem){
+    try{navigator.clipboard.write([new ClipboardItem({'text/plain':new Blob([text],{type:'text/plain'}),'image/png':img})]).then(()=>ok(true),textOnly)}catch(_){textOnly()}
+  }else textOnly();
+}
+function shareSystem(){
+  const l=lvOf(S.lv),r=store.rec[S.lv].last,text=shareText(l,r)+'\n'+SHARE_URL;
+  const go2=im=>navigator.share({files:[new File([im.blob],'novelam-araguna.png',{type:'image/png'})],text}).catch(e=>{if(e&&e.name!=='AbortError')toast('共有できませんでした')});
+  if(imgCache.key===curKey()&&imgCache.blob)go2(imgCache);else makeImage().then(go2,()=>toast('共有できませんでした'));
+}
+document.getElementById('ov').addEventListener('click',e=>{if(e.target.id==='ov'||e.target.closest('[data-ov=close]'))e.currentTarget.hidden=true});
+
+app.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+  const a=b.dataset.a;
+  if(S.armed&&S.armed!==a){S.armed=null;clearTimeout(armT)}
+  switch(a){
+    case 'start':sfx('start');go('levels');return;
+    case 'levels':case 'back':sfx('nav');go('levels');return;
+    case 'title':sfx('nav');go('title');return;
+    case 'lv':{const id=b.dataset.id;if(store.rec[id]){sfx('nav');go('result',id)}else{sfx('start');startPlay(id)}return}
+    case 'next':{const nx=nextLv();if(nx){sfx('start');startPlay(nx.id)}else{sfx('nav');go('levels')}return}
+    case 'retry':sfx('start');startPlay(S.lv);return;
+    case 'see':store.rec[S.lv].seen=true;store.rec[S.lv].show=true;save();sfx('nav');render();return;
+    case 'unsee':store.rec[S.lv].show=false;save();sfx('nav');render();return;
+    case 'img':sfx('nav');showImage();return;
+    case 'dc':sfx('word');shareDiscord();return;
+    case 'sys':shareSystem();return;
+    case 'mute':store.mute=!store.mute;save();render();sfx('place');return;
+    case 'reset':if(armed('reset')){store={rec:{},drafts:{},mute:store.mute};save();sfx('back')}render();return;
+  }
+  if(S.screen==='play'&&P&&playAct(a,b,e)){save();render()}
+});
+addEventListener('resize',()=>{if(S.screen==='play')render()});
+addEventListener('keydown',e=>{
+  if(S.screen!=='play'||!P||e.metaKey||e.ctrlKey||e.altKey||!document.getElementById('ov').hidden)return;
+  const k=e.key;let a=null;
+  if(k==='Backspace')a='bs';else if(k==='Delete')a='del';
+  else if(k==='Enter'&&P.sel&&P.sel.t==='b')a='b2g';
+  else if(k==='Escape')a='esc';else if(k==='ArrowLeft'||k==='ArrowRight')a='mv';
+  if(!a)return;e.preventDefault();
+  if(a==='esc'){P.sel=null;P.fx=-1}
+  else if(a==='mv'){
+    const{r,u}=P.gc,nu=u+(k==='ArrowLeft'?-1:1);P.sel=null;
+    if(nu>=0&&nu<=P.rows[r].length)setCaret(r,nu);
+    else if(nu>P.rows[r].length&&r<P.rows.length-1)setCaret(r+1,0);
+    else if(nu<0&&r>0)setCaret(r-1,P.rows[r-1].length);
+  }
+  else if(!playAct(a,null,null))return;
+  save();render();
+});
+
+function boot(d){
+  d=d||{};
+  if(d.store&&!Object.keys(store.rec).length&&!Object.keys(store.drafts).length){store=d.store;tidy()}
+  if(d.screen==='play'&&store.drafts[d.lv]){P=store.drafts[d.lv];S.screen='play';S.lv=d.lv}
+  else if(d.screen==='result'&&store.rec[d.lv]){S.screen='result';S.lv=d.lv}
+  else if(d.screen==='levels')S.screen='levels';
+  render();
+}
+try{window.claude?.hot?.snapshot?.(()=>({screen:S.screen,lv:S.lv,store}))}catch(e){}
+try{window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data)}catch(e){boot()}
+</script>
+</body>
+</html>
