@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
 <title>ノベラムアラグナ</title>
-<meta name="description" content="1文字ずつのカードを並べて、ライトノベルのタイトルを当てるゲーム。原題との一致度で点数が出ます。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ノベラムアラグナ">
-<meta property="og:description" content="ラノベのタイトルを並べ替えて、原題にどこまで近づけるか。あなたの新作は何点？">
 <meta property="og:url" content="https://bookworm1000-cyber.github.io/novelam-araguna/">
 <meta property="og:image" content="https://bookworm1000-cyber.github.io/novelam-araguna/og.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -292,8 +290,8 @@ function titleHTML(){
     <button class="btn pri" data-a="start">スタート</button>
     <ol>
       <li>カードを全部使ってタイトルを並べる</li>
-      <li>原題に近いほど点が高い。ぴったりでなくてよい</li>
-      <li>Lv.1〜5を遊ぶと鬼が開く。もう一度も遊べる</li>
+      <li>原題に近いほど点が高い</li>
+      <li>Lv.1〜5を遊ぶと鬼が開く</li>
     </ol>
     ${any?`<button class="reset${S.armed==='reset'?' armed':''}" data-a="reset">${S.armed==='reset'?'もう一度押すと記録を消します':'記録を消す'}</button>`:''}
   </div></div>`;
