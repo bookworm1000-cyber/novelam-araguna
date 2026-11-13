@@ -143,6 +143,7 @@ button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .sh{display:grid;justify-items:center;gap:3px;font-size:10.5px;color:var(--sub);font-weight:700;text-decoration:none}
 .sh i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:12px;color:var(--paper);background:var(--ink)}
 .sh .sx{background:#000}.sh .sl{background:#06c755;font-size:10px}.sh .sd{background:#5865f2}.sh .si{background:var(--red)}.sh .sa{background:var(--ink);box-shadow:0 0 0 3px var(--red)}
+.cimg{flex:none;height:40px;margin-top:10px}
 .hide{flex:none;margin-top:8px;border:1.5px dashed var(--line);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--sub);background:var(--paper);text-align:left}
 .hide b{color:var(--ink)}
 .ov{position:fixed;inset:0;background:rgba(28,34,48,.6);display:grid;place-items:center;grid-template-columns:minmax(0,420px);justify-content:center;padding:16px;z-index:20}
@@ -384,6 +385,7 @@ function resultHTML(){
   return `<div class="screen"><div class="narrow">${hd('levels','レベル','あなたの新作',`<span class="sm">Lv.${l.mark}</span>${sndBtn()}`)}
     <div class="cover"><small>NEW RELEASE</small><h2 class="ct ${fs}">${r.rows.map(esc).join('<span class="dual">2冊同時発売</span>')}</h2><div class="au">著　あなた</div>
       <div class="belt">一致度<big>${r.score}</big>点<span>${rank(r.score)}レベル</span></div></div>
+    <button class="btn cimg" data-a="cimg">結果の画像をコピー</button>
     ${info}
     <div class="bar"><button class="btn" data-a="retry">もう一度</button><button class="btn pri" data-a="next">${nx?'次のレベルへ':'レベル選択へ'}</button></div>
   </div></div>`;
@@ -393,6 +395,7 @@ function render(){
   const pe=app.querySelector('.pool'),be=app.querySelector('.bench');
   const keep=S.screen==='play'&&P&&pe?{id:P.id,ps:pe.scrollTop,bs:be?be.scrollTop:0}:null;
   app.innerHTML=S.screen==='title'?titleHTML():S.screen==='levels'?levelsHTML():S.screen==='play'?playHTML():resultHTML();
+  if(S.screen==='result')makeImage().catch(()=>{});
   if(S.screen!=='play'||!P)return;
   const p2=app.querySelector('.pool'),b2=app.querySelector('.bench');
   if(keep&&keep.id===P.id)p2.scrollTop=keep.ps;
@@ -617,6 +620,13 @@ async function showImage(){
     ov.innerHTML=`<div class="ovin"><img src="${im.url}" alt="結果の画像"><p>画像を長押し（PCは右クリック）で保存できます</p><div class="row">${ART?'':`<a class="btn" href="${im.url}" download="novelam-araguna.png">保存</a>`}<button class="btn pri" data-ov="close">閉じる</button></div></div>`;
   }catch(e){ov.innerHTML='<div class="ovin"><p>画像を作れませんでした</p><button class="btn pri" data-ov="close">閉じる</button></div>'}
 }
+function copyImage(){
+  try{
+    if(!window.ClipboardItem||!navigator.clipboard||!navigator.clipboard.write)throw 0;
+    navigator.clipboard.write([new ClipboardItem({'image/png':makeImage().then(i=>i.blob)})])
+      .then(()=>toast('画像をコピーしました。貼り付けて送れます'),()=>showImage());
+  }catch(e){showImage()}
+}
 function shareDiscord(){
   const l=lvOf(S.lv),r=store.rec[S.lv].last,text=shareText(l,r)+'\n'+SHARE_URL;
   const ok=img=>toast(img?'画像と文をコピーしました。Discordに貼り付けてください':'文をコピーしました。Discordに貼り付けてください');
@@ -653,6 +663,7 @@ app.addEventListener('click',e=>{
     case 'retry':sfx('start');startPlay(S.lv);return;
     case 'see':store.rec[S.lv].seen=true;store.rec[S.lv].show=true;save();sfx('nav');render();return;
     case 'unsee':store.rec[S.lv].show=false;save();sfx('nav');render();return;
+    case 'cimg':sfx('word');copyImage();return;
     case 'img':sfx('nav');showImage();return;
     case 'dc':sfx('word');shareDiscord();return;
     case 'sys':shareSystem();return;
