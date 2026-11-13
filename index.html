@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
 <title>ノベラムアラグナ</title>
+<meta name="description" content="1文字ずつのカードを並べて、ライトノベルのタイトルを当てるゲーム。原題との一致度で点数が出ます。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ノベラムアラグナ">
+<meta property="og:description" content="ラノベのタイトルを並べ替えて、原題にどこまで近づけるか。あなたの新作は何点？">
+<meta property="og:url" content="https://bookworm1000-cyber.github.io/novelam-araguna/">
+<meta property="og:image" content="https://bookworm1000-cyber.github.io/novelam-araguna/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
 <style>
@@ -135,7 +142,7 @@ button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .share{flex:none;display:flex;justify-content:space-around;padding:10px 0 2px}
 .sh{display:grid;justify-items:center;gap:3px;font-size:10.5px;color:var(--sub);font-weight:700;text-decoration:none}
 .sh i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:12px;color:var(--paper);background:var(--ink)}
-.sh .sx{background:#000}.sh .sl{background:#06c755;font-size:10px}.sh .sd{background:#5865f2}.sh .si{background:var(--red)}
+.sh .sx{background:#000}.sh .sl{background:#06c755;font-size:10px}.sh .sd{background:#5865f2}.sh .si{background:var(--red)}.sh .sa{background:var(--ink);box-shadow:0 0 0 3px var(--red)}
 .hide{flex:none;margin-top:8px;border:1.5px dashed var(--line);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--sub);background:var(--paper);text-align:left}
 .hide b{color:var(--ink)}
 .ov{position:fixed;inset:0;background:rgba(28,34,48,.6);display:grid;place-items:center;grid-template-columns:minmax(0,420px);justify-content:center;padding:16px;z-index:20}
@@ -358,7 +365,7 @@ function playHTML(){
     </div></div>`;
 }
 
-const shareText=(l,r)=>`ノベラムアラグナ Lv.${l.mark}\n${r.rows.map(t=>`『${t}』`).join('\n')}\n一致度${r.score}点（${rank(r.score)}レベル）\n#ノベラムアラグナ`;
+const shareText=(l,r)=>['ラノベのタイトルを並べ替えるゲーム「ノベラムアラグナ」Lv.'+l.mark+'に挑戦！',r.rows.length>1?'できた新作はこの2冊':'できた新作はこちら',...r.rows.map(t=>'『'+t+'』'),'原題との一致度は'+r.score+'点でした！（'+rank(r.score)+'レベル）','あなたは原題にたどり着ける？','#ノベラムアラグナ'].join('\n');
 function canFiles(){
   if(ART||!navigator.canShare)return false;
   try{return navigator.canShare({files:[new File([''],'a.png',{type:'image/png'})]})}catch(e){return false}
@@ -378,11 +385,11 @@ function resultHTML(){
     <div class="cover"><small>NEW RELEASE</small><h2 class="ct ${fs}">${r.rows.map(esc).join('<span class="dual">2冊同時発売</span>')}</h2><div class="au">著　あなた</div>
       <div class="belt">一致度<big>${r.score}</big>点<span>${rank(r.score)}レベル</span></div></div>
     <div class="share">
+      ${canFiles()?'<button class="sh" data-a="sys"><i class="sa">画像</i>画像つき</button>':''}
       <a class="sh" href="${xu}" target="_blank" rel="noopener"><i class="sx">X</i>X</a>
       <a class="sh" href="${lu}" target="_blank" rel="noopener"><i class="sl">LINE</i>LINE</a>
       <button class="sh" data-a="dc"><i class="sd">D</i>Discord</button>
       <button class="sh" data-a="img"><i class="si">画像</i>画像</button>
-      ${canFiles()?'<button class="sh" data-a="sys"><i>共有</i>まとめて</button>':''}
     </div>
     ${info}
     <div class="bar"><button class="btn" data-a="retry">もう一度</button><button class="btn pri" data-a="next">${nx?'次のレベルへ':'レベル選択へ'}</button></div>
