@@ -384,13 +384,6 @@ function resultHTML(){
   return `<div class="screen"><div class="narrow">${hd('levels','レベル','あなたの新作',`<span class="sm">Lv.${l.mark}</span>${sndBtn()}`)}
     <div class="cover"><small>NEW RELEASE</small><h2 class="ct ${fs}">${r.rows.map(esc).join('<span class="dual">2冊同時発売</span>')}</h2><div class="au">著　あなた</div>
       <div class="belt">一致度<big>${r.score}</big>点<span>${rank(r.score)}レベル</span></div></div>
-    <div class="share">
-      ${canFiles()?'<button class="sh" data-a="sys"><i class="sa">画像</i>画像つき</button>':''}
-      <a class="sh" href="${xu}" target="_blank" rel="noopener"><i class="sx">X</i>X</a>
-      <a class="sh" href="${lu}" target="_blank" rel="noopener"><i class="sl">LINE</i>LINE</a>
-      <button class="sh" data-a="dc"><i class="sd">D</i>Discord</button>
-      <button class="sh" data-a="img"><i class="si">画像</i>画像</button>
-    </div>
     ${info}
     <div class="bar"><button class="btn" data-a="retry">もう一度</button><button class="btn pri" data-a="next">${nx?'次のレベルへ':'レベル選択へ'}</button></div>
   </div></div>`;
@@ -400,7 +393,6 @@ function render(){
   const pe=app.querySelector('.pool'),be=app.querySelector('.bench');
   const keep=S.screen==='play'&&P&&pe?{id:P.id,ps:pe.scrollTop,bs:be?be.scrollTop:0}:null;
   app.innerHTML=S.screen==='title'?titleHTML():S.screen==='levels'?levelsHTML():S.screen==='play'?playHTML():resultHTML();
-  if(S.screen==='result')makeImage().catch(()=>{});
   if(S.screen!=='play'||!P)return;
   const p2=app.querySelector('.pool'),b2=app.querySelector('.bench');
   if(keep&&keep.id===P.id)p2.scrollTop=keep.ps;
