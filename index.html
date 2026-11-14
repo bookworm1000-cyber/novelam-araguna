@@ -75,6 +75,13 @@ button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .lvr.oni small{color:#b9c0d0}
 .lvr.oni i{border-color:#b9c0d0;color:#b9c0d0}
 .lvr.oni.done i{background:var(--red);border-color:var(--red);color:var(--paper)}
+.lv{grid-template-columns:1fr 1fr;gap:6px}
+.lvr{grid-template-columns:auto 1fr;grid-template-areas:"b i" "s s" "m m";padding:5px 10px 6px;gap:0 6px;border-radius:10px}
+.lvr b{grid-area:b;font-size:21px;text-align:left;line-height:1.1}
+.lvr i{grid-area:i;justify-self:end;font-size:11px;padding:3px 8px}
+.lvr span{grid-area:s;font-size:12px}
+.lvr small{grid-area:m;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lvr.oni{grid-column:1/-1}
 .lvr:disabled{cursor:default;transform:none}
 
 /* プレイ */
@@ -177,6 +184,11 @@ const LEVELS=[
   {id:'3',mark:'3',len:'約30字',note:'ここからが本番',titles:['無口な俺が深夜に通話しているのは、クラスで1番美人な優等生でした']},
   {id:'4',mark:'4',len:'約40字',note:'主役を見失わないように',titles:['恋人にしようと生徒会長そっくりの女の子を錬成してみたら、オレが下僕になっていました']},
   {id:'5',mark:'5',len:'約50字',note:'最長の45枚。根気の勝負',titles:['真の仲間じゃないと勇者のパーティーを追い出されたので、辺境でスローライフすることにしました']},
+  {id:'6',mark:'6',len:'約25字',note:'後半戦のはじまり',titles:['お姉さん派の俺がなぜちっちゃい君を好きになったのか？']},
+  {id:'7',mark:'7',len:'約30字',note:'漢字に惑わされないように',titles:['妹は呪われし人形姫　人間を恐れる兄は、妹の呪いを解くため立ち上がる']},
+  {id:'8',mark:'8',len:'約40字',note:'折り返しを過ぎた',titles:['若返った俺が、二度目の高校生活でやりたいこと　何故か妹になったクラスの女ボス付き']},
+  {id:'9',mark:'9',len:'約40字',note:'似た言葉が何度も出る',titles:['指結びの錬金術師　～手を繋いでなければ死んでしまう少女と、錬金術が使えない不能の少年～']},
+  {id:'10',mark:'10',len:'約45字',note:'最後の関門',titles:['男子禁制ゲーム世界で俺がやるべき唯一のこと　百合の間に挟まる男として転生してしまいました']},
   {id:'oni',mark:'鬼',len:'10字＋30字',note:'2冊ぶんのカードが混ざっている',titles:['死亡遊戯で飯を食う。','前世不死身の魔王にとって、デスゲームはぬるすぎる']},
 ];
 const BASE=LEVELS.filter(l=>l.id!=='oni');
@@ -291,7 +303,7 @@ function titleHTML(){
     <ol>
       <li>カードを全部使ってタイトルを並べる</li>
       <li>原題に近いほど点が高い</li>
-      <li>Lv.1〜5を遊ぶと鬼が開く</li>
+      <li>Lv.1〜10を遊ぶと鬼が開く</li>
     </ol>
     ${any?`<button class="reset${S.armed==='reset'?' armed':''}" data-a="reset">${S.armed==='reset'?'もう一度押すと記録を消します':'記録を消す'}</button>`:''}
   </div></div>`;
@@ -302,7 +314,7 @@ function levelsHTML(){
   const rows=LEVELS.map(l=>{
     const r=store.rec[l.id],oni=l.id==='oni',locked=!unlocked(l);
     const chip=r?(r.best.score>r.first.score?`${r.first.score}→${r.best.score}点`:`${r.first.score}点`):locked?`あと${BASE.length-d}つ`:store.drafts[l.id]?'途中':'未プレイ';
-    return `<button class="lvr${r?' done':''}${oni?' oni':''}" data-a="lv" data-id="${l.id}"${locked?' disabled':''}><b>${l.mark}</b><span>${l.len}・${count(l)}枚</span><i>${chip}</i><small>${locked?'Lv.1〜5を遊ぶと開く':l.note}</small></button>`;
+    return `<button class="lvr${r?' done':''}${oni?' oni':''}" data-a="lv" data-id="${l.id}"${locked?' disabled':''}><b>${l.mark}</b><span>${l.len}・${count(l)}枚</span><i>${chip}</i><small>${locked?'Lv.1〜10を遊ぶと開く':l.note}</small></button>`;
   }).join('');
   return `<div class="screen"><div class="narrow">${hd('title','タイトル','レベルをえらぶ',`<span class="sm">${d} / ${BASE.length} クリア</span>`)}<div class="lv">${rows}</div></div></div>`;
 }
